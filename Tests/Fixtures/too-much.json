@@ -1,0 +1,1 @@
+{"detail":"Error 413: Request would result in too much data being returned. More than 20000 entries\n\nRequest:\nhttp://ws2/query?format=json&starttime=2026-01-01T00:00:00&endtime=2026-10-01T00:00:00\n\nRequest Submitted:\n2026-10-15T13:35:24.786\n\nService version: v 2.2\nfdsnws-event: v 1.2.1\n"}

@@ -1,0 +1,46 @@
+{
+    "name": "omnilab/emsc",
+    "type": "library",
+    "description": "Omnilab EMSC: an earthquake of the European-Mediterranean Seismological Centre's catalogue by its SeismicPortal id - magnitude and type, place, depth, time, Flinn-Engdahl region, contributing agency - and the earthquakes of a box or around a point over a period as series (count per step, each one's magnitude or depth, or the step's maximum, mean...) or as occurrences, entities with their time and place a page at a time, through the SeismicPortal's FDSN event web service, no key needed.",
+    "keywords": [
+        "science",
+        "earth-sciences",
+        "seismology",
+        "earthquakes",
+        "emsc",
+        "seismicportal",
+        "fdsn",
+        "omnilab"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marco Meyer",
+            "email": "marco.meyer@glitchr.io"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "glitchr/omnilab": "^1.0@dev",
+        "symfony/http-client": "^6.4|^7.0|^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Omnilab\\Emsc\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnilab\\Emsc\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

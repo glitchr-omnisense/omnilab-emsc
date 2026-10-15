@@ -1,0 +1,49 @@
+<?php
+
+namespace Omnilab\Emsc;
+
+use Omnilab\Config;
+use Omnilab\Source\SourceFactory;
+use Omnilab\Source\SourceInterface;
+use Symfony\Component\HttpClient\HttpClient;
+
+/**
+ * The EMSC's earthquake catalogue (SeismicPortal): an event by its id, and
+ * the earthquakes of a place and a period as series or as occurrences - no
+ * key needed.
+ *
+ *   options:
+ *     mailto: 'support@glitchr.io'     # in the User-Agent
+ *     radius_km: 100                   # the circle around a Point, for series(), and for occurrences() when a query gives none
+ *     min_magnitude: null              # the smallest magnitude counted when a query says none (null: every event)
+ *     throttle: 0                      # seconds between two calls: the EMSC publishes no figure
+ *     base_uri: 'https://www.seismicportal.eu/fdsnws/event/1/'
+ */
+final class EmscSourceFactory extends SourceFactory
+{
+    protected function populate(Config $c): void
+    {
+        $c->defaults([
+            'omnilab.factory_name' => 'emsc',
+            'omnilab.required_options' => [],
+            'radius_km' => 100.0,
+            'min_magnitude' => null,
+            'throttle' => 0.0,
+            'base_uri' => EmscSource::BASE_URI,
+        ]);
+    }
+
+    protected function build(Config $c): SourceInterface
+    {
+        $minimum = $c->get('min_magnitude');
+
+        return new EmscSource(
+            $this->http ?? HttpClient::create(),
+            (float) $c->get('radius_km'),
+            null === $minimum || '' === $minimum ? null : (float) $minimum,
+            (string) $c->get('base_uri', EmscSource::BASE_URI),
+            ['User-Agent' => self::userAgent($c)],
+            (float) $c->get('throttle'),
+        );
+    }
+}
