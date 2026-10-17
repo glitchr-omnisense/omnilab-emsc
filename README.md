@@ -1,7 +1,7 @@
 # omnilab/emsc
 
 The earthquake catalogue of the European-Mediterranean Seismological Centre (EMSC-CSEM) for
-[glitchr/omnilab](https://github.com/glitchr-studio/omnilab): an event by its SeismicPortal id -
+[omniscient/omnilab](https://github.com/glitchr-studio/omnilab): an event by its SeismicPortal id -
 its magnitude and type, its place and depth, its time, its Flinn-Engdahl region, the agency that
 located it - and the earthquakes of a box or around a point over a period, as series (their count
 per day or hour; each one's magnitude or depth, or the step's maximum, mean...) or as occurrences -
