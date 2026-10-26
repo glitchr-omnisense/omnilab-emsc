@@ -34,7 +34,7 @@ series and the occurrences. Its JSON is GeoJSON with the EMSC's own properties (
 
 ## Its shapes
 
-As [omnilab/usgs](https://github.com/glitchr-studio/omnilab-usgs): an earthquake is an
+As [omnilab/usgs](https://github.com/glitchr-omnisense/omnilab-usgs): an earthquake is an
 **entity** with a `time` and a `place`; the earthquakes of a place over a period are a **series**
 when a variable over time is asked (how many a day, the largest of each day, each one's
 magnitude: an irregular series, `step` null), and **occurrences** (the core's fourth shape) when

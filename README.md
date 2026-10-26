@@ -1,7 +1,7 @@
 # omnilab/emsc
 
 The earthquake catalogue of the European-Mediterranean Seismological Centre (EMSC-CSEM) for
-[omniscient/omnilab](https://github.com/glitchr-studio/omnilab): an event by its SeismicPortal id -
+[omnisense/omnilab](https://github.com/glitchr-omnisense/omnilab): an event by its SeismicPortal id -
 its magnitude and type, its place and depth, its time, its Flinn-Engdahl region, the agency that
 located it - and the earthquakes of a box or around a point over a period, as series (their count
 per day or hour; each one's magnitude or depth, or the step's maximum, mean...) or as occurrences -
@@ -36,7 +36,7 @@ omnilab:
                 min_magnitude: 4               # the smallest magnitude series() and occurrences() count, when a query says none; null: all
 ```
 
-The USGS's catalogue is [omnilab/usgs](https://github.com/glitchr-studio/omnilab-usgs): the same
+The USGS's catalogue is [omnilab/usgs](https://github.com/glitchr-omnisense/omnilab-usgs): the same
 FDSN standard, another network's locations and magnitudes for the same earthquakes (the EMSC's
 M 5.0 mb of 2026-10-04 is the USGS's M 5.0 mww us6000tzip), and no id of one in the other, so the
 `Collector` does not join them.
