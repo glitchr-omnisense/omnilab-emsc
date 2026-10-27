@@ -1,5 +1,10 @@
 # omnilab/emsc
 
+The EMSC's earthquake catalogue, through the SeismicPortal's FDSN event service
+(`https://www.seismicportal.eu/fdsnws/event/1/`), for [omnisense/omnilab](https://github.com/glitchr-omnisense/omnilab):
+an earthquake by its SeismicPortal id - time, place, magnitude, depth, Flinn-Engdahl region - as an
+entity; the earthquakes of a box or around a point as series or as occurrences. No key.
+
 ## Installation
 
 ```sh
@@ -18,6 +23,48 @@ $emsc = (new EmscSourceFactory($httpClient))->create([
 
 With the Symfony bundle, the factory is registered as `emsc` when the bundle knows it; otherwise
 register `EmscSourceFactory` as a service (it is autoconfigured as a `SourceFactoryInterface`).
+
+## Credentials
+
+None: the SeismicPortal's FDSN event service takes no key and no account.
+
+## Options
+
+The factory's options, with the defaults it applies (`EmscSourceFactory`):
+
+| Option | Type | Default | Required | Effect |
+|---|---|---|---|---|
+| `radius_km` | `float` | `100` | no | the circle around a `Point`, in kilometres, for `series()`, and for `occurrences()` when the query gives no radius (sent in degrees) |
+| `min_magnitude` | `?float` | null | no | the smallest magnitude counted when a query says none; null: every event the catalogue has |
+| `mailto` | `?string` | null | no | a contact address, sent in the User-Agent |
+| `user_agent` | `?string` | null | no | the whole User-Agent, in place of the one made from `mailto` |
+| `throttle` | `float` | `0` | no | seconds left between two calls: the EMSC publishes no figure |
+| `base_uri` | `string` | `https://www.seismicportal.eu/fdsnws/event/1/` | no | the API the source calls |
+
+Per call, `occurrences()` reads the filters `OccurrenceQuery::MIN_MAGNITUDE`, `MAX_MAGNITUDE` and
+`magnitude_type`; any other key is refused before any call ([Calls](#calls)).
+
+## Capabilities
+
+`capabilities()` answers `entity`, `series`, `occurrences`, `historical`, `area`; an operation it does not answer throws `NotSupportedException` before any call.
+
+| Capability | Supported | |
+|---|---|---|
+| `entity` | yes | a SeismicPortal id (`20261004_0000156`, `emsc.event:`, `emsc:`, its page); another scheme refused before any call; one call |
+| `search` | no | the catalogue has no text search |
+| `series` | yes | `count`, `magnitude`, `depth` over a box or around a point, by any step; one call for every variable; 20,000 events at most (the service's 413 beyond) |
+| `products` | no |  |
+| `occurrences` | yes | the earthquakes of a box, a circle or the world, sorted newest, oldest, by magnitude; 20,000 a page at most, paged by offset; no total |
+| `datasets` | no |  |
+| `jobs` | no |  |
+| `open` | no |  |
+| `structure` | no |  |
+| `cross_references` | no | none: the SeismicPortal gives no other base's id |
+| `forecast` | no |  |
+| `historical` | yes | the catalogue from 1998 |
+| `area` | yes | a `BBox` (across the antimeridian too) |
+| `station` | no |  |
+| `cloud_cover` | no |  |
 
 ## Which API
 
@@ -102,6 +149,63 @@ SeismicPortal services), the QuakeML's other origins and magnitudes (`includeall
 `includeallmagnitudes`), the contributor filter and the EMSC website id lookup (`evid`) are not
 read.
 
+## Example
+
+```php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Omnilab\Emsc\EmscSourceFactory;
+use Omnilab\Model\BBox;
+use Omnilab\Model\Series;
+use Omnilab\Source\OccurrenceQuery;
+use Omnilab\Source\SeriesQuery;
+use Symfony\Component\HttpClient\HttpClient;
+
+$emsc = (new EmscSourceFactory(HttpClient::create()))->create(['mailto' => 'you@example.org']);
+$europe = new BBox(-25, 35, 45, 72);
+
+$quakes = $emsc->occurrences(new OccurrenceQuery($europe, new DateTimeImmutable('2026-10-19'), new DateTimeImmutable('2026-10-25'), [OccurrenceQuery::MIN_MAGNITUDE => 4], limit: 3, sort: 'magnitude'));
+foreach ($quakes as $quake) {
+    echo $quake->time->format('Y-m-d H:i:s'), ' UTC  ', $quake->label, '  ', $quake->property('depth'), '  ', $quake->id, "\n";
+}
+
+[$count, $max] = $emsc->series(new SeriesQuery(['count', 'magnitude'], $europe, new DateTimeImmutable('2026-10-19'), new DateTimeImmutable('2026-10-25'), SeriesQuery::DAILY, Series::MAX));
+echo 'events a day: ', implode(', ', $count->values()), "\nlargest a day: ", implode(', ', $max->values()), "\n";
+```
+
+```
+2026-10-23 10:19:16 UTC  M 5.7 - SICILY, ITALY  3.9 km  emsc.event:20261023_0000151
+2026-10-19 14:44:23 UTC  M 5.3 - ICELAND  1.1 km  emsc.event:20261019_0000208
+2026-10-23 13:55:36 UTC  M 5.2 - SICILY, ITALY  10 km  emsc.event:20261023_0000226
+events a day: 125, 133, 152, 164, 210, 192, 126
+largest a day: 5.3, 3.8, 3.9, 3.9, 5.7, 3.6, 4.9
+```
+
+(as answered on 2026-10-27: two calls; `count` is always the step's sum)
+
+```yaml
+# config/packages/omnilab.yaml
+omnilab:
+    sources:
+        emsc: { factory: emsc, options: { mailto: '%env(OMNILAB_MAILTO)%', radius_km: 100 } }
+```
+
+## Errors
+
+Every call goes through `HttpSource`: a 404 or a 410 (and a 204) is null - an empty page for a list -; a 429 is a `RateLimitedException` (`retryAfter` from `Retry-After`); a 5xx, a time-out or a host that does not answer an `UnavailableException`; any other 4xx a `ProviderException` with its `status` and what the service said; an answer that is not JSON a `ProviderException`, a web page answered for JSON an `UnavailableException`.
+
+The SeismicPortal's own: an unknown id is its 204, null; more than 20,000 events in a series its
+413 ("More than 20000 entries"), a `ProviderException`. Before any call (`NotSupportedException`):
+a variable not served, an aggregation it does not make, a station, a filter or a sort not read;
+a magnitude filter that is not a number (`\InvalidArgumentException`).
+
+> [!WARNING]
+> Known defect: an event whose id the source cannot read (`EmscSource::toEntity()`) throws
+> `\UnexpectedValueException`, where a `ProviderException` (an `OmnilabException`) is expected: a
+> `catch (OmnilabException)` misses it.
+
 ## Verified, and not
 
 Against the real service on 2026-10-15: the M 5.0 of 2026-10-04 in central Turkey by its id and
@@ -114,5 +218,20 @@ sides; the catalogue's oldest event by an open start (1998-01-01, western Turkey
 over nine months (the 413 "More than 20000 entries"). The fixtures in `Tests/Fixtures/` are its
 answers.
 
+Again on 2026-10-27: the three largest M4+ earthquakes over Europe from 10-19 to 10-25 (Sicily,
+Iceland), the week's daily count and maxima (the example above).
+
 Not verified: the service's answer to a client that calls too fast (no 429 met, no rate
 published). Not offered: EarthScope's (IRIS) event service, retired.
+
+## Responsibility
+
+This package is an independent, unofficial client: it is not affiliated with, endorsed by or
+sponsored by the EMSC-CSEM. The SeismicPortal's datasets are under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) ([terms](https://www.seismicportal.eu/terms.html)),
+to be credited ("Credit: EMSC-CSEM SeismicPortal, https://www.seismicportal.eu"); bulk-copying the
+catalogue needs the EMSC's written permission, as the README's
+[Terms of use](https://github.com/glitchr-omnisense/omnilab-emsc#terms-of-use) says. Whoever runs
+the package is responsible for complying with them and for any use made of what it returns: see
+the README's [Responsibility](https://github.com/glitchr-omnisense/omnilab-emsc#responsibility)
+section.
