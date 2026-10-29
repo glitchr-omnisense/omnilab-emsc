@@ -201,11 +201,6 @@ The SeismicPortal's own: an unknown id is its 204, null; more than 20,000 events
 a variable not served, an aggregation it does not make, a station, a filter or a sort not read;
 a magnitude filter that is not a number (`\InvalidArgumentException`).
 
-> [!WARNING]
-> Known defect: an event whose id the source cannot read (`EmscSource::toEntity()`) throws
-> `\UnexpectedValueException`, where a `ProviderException` (an `OmnilabException`) is expected: a
-> `catch (OmnilabException)` misses it.
-
 ## Verified, and not
 
 Against the real service on 2026-10-15: the M 5.0 of 2026-10-04 in central Turkey by its id and

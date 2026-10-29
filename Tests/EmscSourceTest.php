@@ -78,6 +78,13 @@ final class EmscSourceTest extends TestCase
         self::assertSame([['format' => 'json', 'eventid' => '20261004_0000156']], $this->calls);
     }
 
+    public function testAnEventWhoseIdItCannotReadIsAProviderError(): void
+    {
+        $this->expectException(\Omnilab\Exception\ProviderException::class);
+        $this->expectExceptionMessage('[emsc] The SeismicPortal answered an event without an id it reads ("not an id").');
+        $this->source(new MockResponse('{"type":"Feature","id":"not an id","properties":{"unid":"not an id","mag":5.0}}'))->entity('20261004_0000156');
+    }
+
     public function testAnEventByItsPageOrScheme(): void
     {
         $source = $this->source();

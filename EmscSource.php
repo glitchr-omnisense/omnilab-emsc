@@ -3,6 +3,7 @@
 namespace Omnilab\Emsc;
 
 use Omnilab\Exception\NotSupportedException;
+use Omnilab\Exception\ProviderException;
 use Omnilab\Model\BBox;
 use Omnilab\Model\Domain;
 use Omnilab\Model\Entity;
@@ -230,7 +231,7 @@ final class EmscSource extends HttpSource
         $add('updated', 'Last updated', null === ($u = self::time($p['lastupdate'] ?? null)) ? null : $u->format(\DATE_ATOM));
 
         $value = (string) ($feature['id'] ?? $p['unid'] ?? '');
-        $id = Identifier::tryOf(Scheme::EMSC_EVENT, $value) ?? throw new \UnexpectedValueException(\sprintf('The SeismicPortal answered an event without an id it reads ("%s").', $value));
+        $id = Identifier::tryOf(Scheme::EMSC_EVENT, $value) ?? throw new ProviderException($this->getName(), \sprintf('The SeismicPortal answered an event without an id it reads ("%s").', $value));
         $place = is_numeric($p['lat'] ?? null) && is_numeric($p['lon'] ?? null) ? new Point((float) $p['lat'], (float) $p['lon']) : null;
         $magnitude = is_numeric($p['mag'] ?? null) ? \sprintf('M %.1f', (float) $p['mag']) : null;
         $time = self::time($p['time'] ?? null);
