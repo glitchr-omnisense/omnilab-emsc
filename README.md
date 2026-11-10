@@ -53,6 +53,17 @@ website, the services and the databases as such stay the EMSC's: bulk-copying th
 its written permission. The service publishes no rate, answers at most 20,000 events a query (a
 413 beyond); the source makes one call per entity, per series query and per page of occurrences.
 
+## Usage policy
+
+Declared as data in [`policy.json`](policy.json) (read at https://www.seismicportal.eu/fdsn-wsevent.html on 2026-11-10), and honoured on every request by the
+core: a limit reached waits when its window ends within `max_wait` seconds, else the request is not
+sent ([Usage policies](https://github.com/glitchr-omnisense/omnilab/blob/1.x/docs/policies.md)).
+
+- Limits: not published (unknown).
+- Licence: CC-BY-4.0; commercial use: allowed.
+- Credit: required: Credit: EMSC-CSEM SeismicPortal, https://www.seismicportal.eu (https://www.seismicportal.eu).
+- Needs: nothing.
+
 ## Responsibility
 
 This package is an independent, unofficial client: it is not affiliated with, endorsed by or
