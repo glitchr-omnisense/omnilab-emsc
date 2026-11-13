@@ -43,6 +43,34 @@ M 5.0 mb of 2026-10-04 is the USGS's M 5.0 mww us6000tzip), and no id of one in 
 
 See [docs/](docs/index.md) for what is read, how it maps, and what the catalogue does not give here.
 
+## Install and a first call
+
+```sh
+composer require omnilab/emsc
+```
+
+A real call, with no account and no key: an earthquake of the EMSC's catalogue. `mailto` is your
+address, sent in the User-Agent so that the service can reach you before it blocks a caller; the
+source keeps to the limits its [`policy.json`](policy.json) declares.
+
+```php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Omnilab\Emsc\EmscSourceFactory;
+
+$emsc = (new EmscSourceFactory())->create(['mailto' => 'you@example.org']);   // your address, in the User-Agent
+$quake = $emsc->entity('20261004_0000156');
+echo $quake->label, ', ', $quake->time->format('Y-m-d H:i:s T'), ', ', $quake->place, "\n";
+```
+
+Its output on 2026-11-13:
+
+```
+M 5.0 - CENTRAL TURKEY, 2026-10-04 11:43:23 UTC, 37.7417,36.1008
+```
+
 ## Terms of use
 
 The SeismicPortal's datasets are under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
